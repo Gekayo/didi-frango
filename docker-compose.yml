@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  app:
+    image: teguh02/laravel-filament
+    container_name: laravel_app
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "8000:8000"
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    environment:
+      QUEUE_CONNECTION: database
+    command: bash -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+      MYSQL_USER: laravel
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  queue:
+    image: teguh02/laravel-filament  # <- usa a mesma imagem do app
+    container_name: laravel_queue
+    working_dir: /var/www/html
+    volumes:
+      - ./src:/var/www/html
+    networks:
+      - app-network
+    depends_on:
+      - app
+    command: php artisan queue:work --tries=3
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
