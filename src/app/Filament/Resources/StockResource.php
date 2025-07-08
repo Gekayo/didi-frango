@@ -26,10 +26,21 @@ class StockResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('product_id')->relationship('product', 'name'),
-                TextInput::make('quantity')->numeric(),
-                TextInput::make('unit'),
-                TextInput::make('minimum_alert'),
+                Select::make('product_id')
+                    ->relationship('product', 'name')
+                    ->searchable()
+                    ->required()
+                    ->preload(),
+
+                TextInput::make('quantity')
+                    ->required()
+                    ->numeric()
+                    ->minValue(0),
+
+                TextInput::make('unit')
+                    ->default('un')
+                    ->maxLength(10)
+                    ->disabled()
             ]);
     }
 
@@ -39,21 +50,13 @@ class StockResource extends Resource
             ->columns([
                 TextColumn::make('product.name')
                     ->label('Produto')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
 
                 TextColumn::make('quantity')
                     ->label('Quantidade'),
 
                 TextColumn::make('unit')
-                    ->label('Tipo'),
-
-                TextColumn::make('minimum_alert')
-                    ->label('Estoque Mínimo'),
-
-                TextColumn::make('created_at')
-                    ->dateTime('d/m/Y H:i')
-                    ->label('Criado em'),
+                    ->Label('Unidade')
             ])
             ->filters([
                 //

@@ -28,10 +28,9 @@ class ProductResource extends Resource
                 TextInput::make('name'),
 
                 TextInput::make('price')
-                    ->numeric(),
-
-                TextInput::make('is_active')
-                    ->numeric(),
+                    ->required()
+                    ->numeric()
+                    ->minValue(0)
             ]);
     }
 
@@ -39,9 +38,8 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
-                TextColumn::make('price'),
-                TextColumn::make('is_active'),
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('price')->money(),
             ])
             ->filters([
                 //

@@ -10,8 +10,4 @@ class Client extends Model
         'whatsapp',
         'address'
     ];
-
-    public function order(){
-        return $this->hasMany(Order::class);
-    }
 }

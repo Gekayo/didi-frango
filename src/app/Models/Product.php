@@ -8,15 +8,14 @@ class Product extends Model
 {
     protected $fillable = [
         'name',
-        'price',
-        'is_active'
+        'price'
     ];
-
-    public function orderitem(){
-        return $this->hasMany(Order_item::class);
-    }
 
     public function stock(){
         return $this->hasOne(Stock::class);
+    }
+
+    public function orderItems(){
+        return $this->hasMany(OrderItem::class);
     }
 }

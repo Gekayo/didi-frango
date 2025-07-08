@@ -35,7 +35,7 @@ services:
     restart: unless-stopped
 
   queue:
-    image: teguh02/laravel-filament  # <- usa a mesma imagem do app
+    image: teguh02/laravel-filament
     container_name: laravel_queue
     working_dir: /var/www/html
     volumes:

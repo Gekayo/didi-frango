@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->string('whatsapp')->nullable();
-            $table->text('address');
+            $table->string('whatsapp');
+            $table->string('address');
             $table->timestamps();
         });
     }

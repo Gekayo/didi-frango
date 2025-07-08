@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('client_id')->nullable()->constrained('clients')->nullOnDelete();
-            $table->enum('status', ['peding', 'in_preparation', 'finished', 'canceled']);
+            $table->enum('status', ['pendingd', 'in_preparation', 'finished', 'canceled'])->defaul('finished');
             $table->enum('type', ['counter', 'delivery', 'withdrawal'])->default('counter');
             $table->decimal('total', 10, 2)->default(0);
-            $table->text('observation');
+            $table->text('observation')->nullable();
             $table->timestamps();
         });
     }
