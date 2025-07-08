@@ -20,6 +20,8 @@ class ProductResource extends Resource
     protected static ?string $model = Product::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Vendas';
+    protected static ?string $navigationLabel = 'Produtos';
 
     public static function form(Form $form): Form
     {
@@ -38,8 +40,10 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name')->searchable(),
-                TextColumn::make('price')->money(),
+                TextColumn::make('name')->searchable()
+                    ->label('Nome'),
+                TextColumn::make('price')->money('BRL')
+                    ->label('Valor'),
             ])
             ->filters([
                 //

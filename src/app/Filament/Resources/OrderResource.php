@@ -26,7 +26,10 @@ class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationLabel = 'Pedidos';
+    protected static ?string $navigationIcon = 'heroicon-o-receipt-refund';
+
+    protected static ?string $navigationGroup = 'Vendas';
 
     public static function form(Form $form): Form
     {
@@ -45,7 +48,8 @@ class OrderResource extends Resource
                         'finished' => 'Finalizado',
                         'canceled' => 'Cancelado'
                     ])
-                    ->required(),
+                    ->required()
+                    ->default('in_preparation'),
 
                 Select::make('type')
                     ->options([
@@ -71,14 +75,40 @@ class OrderResource extends Resource
                                 $product = Product::find($state);
                                 if($product){
                                     $set('price_unity', $product->price);
+                                    $set('quantity', 1);
                                 }
-                            }),
+                            })
+                            ->live(),
 
                         TextInput::make('quantity')
                             ->numeric()
                             ->minValue(1)
                             ->required()
-                            ->dehydrated(),
+                            ->dehydrated()
+                            ->rules([
+                                function ($get){
+                                    return function (string $attribute, $value, $fail) use ($get){
+                                      $productId = $get('product_id');
+                                      $quantity = (int) $value;
+                                      
+                                      if(!$productId){
+                                        return;
+                                      }
+
+                                      $product = Product::with('stock')->find($productId);
+
+                                      if(!$product || !$product->stock){
+                                        $fail('Produto não possui registro de estoque');
+                                        return;
+                                      }
+
+                                      if($quantity > $product->stock->quantity){
+                                        $fail("Quantidade indisponível. Estoque atual: {$product->stock->quantity}");
+                                      }
+                                    };
+                                }
+                            ])
+                            ->live(),
 
                         TextInput::make('price_unity')
                             ->disabled()
@@ -125,24 +155,14 @@ class OrderResource extends Resource
                 TextColumn::make('client.whatsapp')->label('Cliente'),
                 TextColumn::make('status'),
                 TextColumn::make('total')->money('BRL'),
-                TextColumn::make('created_at')->dateTime(),
+                TextColumn::make('created_at')->dateTime()
+                    ->label('Data Pedido'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('process_stock')
-                    ->label('Processar Estoque')
-                    ->icon('heroicon-o-arrow-path')
-                    ->hidden(fn (Order $record): bool => $record->status !== 'finished' || $record->stock_updated)
-                    ->action(function (Order $record) {
-                    DecrementStockJob::dispatch($record);
-                    Notification::make()
-                        ->title('Estoque sendo processado em background')
-                        ->success()
-                        ->send();
-                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
