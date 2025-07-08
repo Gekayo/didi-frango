@@ -6,6 +6,7 @@ use App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource\RelationManagers;
 use App\Models\Order;
 use App\Models\Product;
+use App\Jobs\DecrementStockJob;
 use Filament\Forms;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Form;
@@ -19,6 +20,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Illuminate\Support\Facades\Log;
+use Filament\Notifications\Notification;
 
 class OrderResource extends Resource
 {
@@ -130,6 +132,17 @@ class OrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('process_stock')
+                    ->label('Processar Estoque')
+                    ->icon('heroicon-o-arrow-path')
+                    ->hidden(fn (Order $record): bool => $record->status !== 'finished' || $record->stock_updated)
+                    ->action(function (Order $record) {
+                    DecrementStockJob::dispatch($record);
+                    Notification::make()
+                        ->title('Estoque sendo processado em background')
+                        ->success()
+                        ->send();
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

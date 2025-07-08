@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Order;
 use App\Jobs\DecrementStockJob;
+use Illuminate\Support\Facades\Log;
 
 class OrderObserver
 {
@@ -12,7 +13,9 @@ class OrderObserver
      */
     public function created(Order $order): void
     {
-        //
+        if ($order->status === 'finished' && !$order->stock_updated) {
+            DecrementStockJob::dispatch($order);
+        }
     }
 
     /**
@@ -20,11 +23,13 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-        if (
-            $order->status === 'finished' &&
-            $order->getOriginal('status') !== 'finished' &&
-            !$order->stock_synced
-        ) {
+        if ($order->isDirty('status') && 
+            $order->status === 'finished' && 
+            !$order->stock_updated) {
+            
+            Log::info("Disparando job para atualizar estoque do pedido ID: {$order->id}");
+            
+            // Dispara o job para processar em background
             DecrementStockJob::dispatch($order);
         }
     }

@@ -5,9 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\Attributes\AsModelObserver;
 
-#[AsModelObserver(observer: \App\Observers\OrderObserver::class)]
 class Order extends Model
 {
     protected $fillable = [
